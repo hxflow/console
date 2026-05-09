@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * Build hx-ui: Vite web assets → bun compile single binary.
+ * Build hx-console: Vite web assets → bun compile single binary.
  * Usage: bun scripts/build.ts [--skip-web] [--target <platform>]
  */
 
@@ -24,10 +24,10 @@ if (!skipWeb) {
 
 // Step 2: bun compile
 const TARGETS = [
-  { target: "bun-darwin-arm64",  out: "hx-ui-darwin-arm64" },
-  { target: "bun-darwin-x64",    out: "hx-ui-darwin-x64" },
-  { target: "bun-linux-arm64",   out: "hx-ui-linux-arm64" },
-  { target: "bun-linux-x64",     out: "hx-ui-linux-x64" },
+  { target: "bun-darwin-arm64",  out: "hx-console-darwin-arm64" },
+  { target: "bun-darwin-x64",    out: "hx-console-darwin-x64" },
+  { target: "bun-linux-arm64",   out: "hx-console-linux-arm64" },
+  { target: "bun-linux-x64",     out: "hx-console-linux-x64" },
 ]
 
 const currentTarget = (() => {
@@ -47,7 +47,7 @@ for (const { target, out } of toBuild) {
     "bun", "build", "--compile",
     `--target=${target}`,
     "--sourcemap=none",
-    "bin/hx-ui.ts",
+    "bin/hx-console.ts",
     `--outfile=${outPath}`,
   ], { cwd: root, stdio: ["ignore", "inherit", "inherit"] })
   if (r.exitCode !== 0) { console.error(`Failed: ${out}`); process.exit(1) }

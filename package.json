@@ -1,11 +1,11 @@
 {
-  "name": "@hxflow/ui",
+  "name": "@hxflow/console",
   "version": "0.1.0",
-  "description": "hxflow web UI — run list, live tail, diff viewer",
+  "description": "hxflow console — run history, live event tail, diff viewer",
   "license": "MIT",
   "type": "module",
   "bin": {
-    "hx-ui": "./bin/hx-ui.ts"
+    "hx-console": "./bin/hx-console.ts"
   },
   "scripts": {
     "dev:server": "bun --watch server/index.ts",

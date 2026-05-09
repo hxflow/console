@@ -48,7 +48,7 @@ export async function startServer(opts: ServerOptions = {}) {
   const server = Bun.serve({ fetch: app.fetch, port, hostname: host })
 
   const url = `http://localhost:${port}/?token=${token}`
-  console.log(`hx-ui listening on http://${host}:${port}`)
+  console.log(`hx-console listening on http://${host}:${port}`)
   console.log(`Open: ${url}`)
 
   return { server, token, url }
