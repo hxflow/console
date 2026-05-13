@@ -4,16 +4,16 @@ import { join } from "node:path"
 import { randomBytes } from "node:crypto"
 import type { Context, Next } from "hono"
 
-function uiDir() {
-  return join(homedir(), ".hx", "ui")
+function consoleDir() {
+  return join(homedir(), ".hx", "console")
 }
 
 function tokenPath() {
-  return join(uiDir(), "token")
+  return join(consoleDir(), "token")
 }
 
 export function getOrCreateToken(): string {
-  mkdirSync(uiDir(), { recursive: true })
+  mkdirSync(consoleDir(), { recursive: true })
   const p = tokenPath()
   if (existsSync(p)) return readFileSync(p, "utf8").trim()
   const token = randomBytes(32).toString("hex")
@@ -22,7 +22,7 @@ export function getOrCreateToken(): string {
 }
 
 export function rotateToken(): string {
-  mkdirSync(uiDir(), { recursive: true })
+  mkdirSync(consoleDir(), { recursive: true })
   const token = randomBytes(32).toString("hex")
   writeFileSync(tokenPath(), token, { mode: 0o600 })
   return token

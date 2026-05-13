@@ -56,7 +56,7 @@ export async function startServer(opts: ServerOptions = {}) {
 
 // Direct run
 if (import.meta.main) {
-  const port = parseInt(process.env.HX_UI_PORT ?? "7878")
-  const host = process.env.HX_UI_HOST ?? "0.0.0.0"
+  const port = parseInt(process.env.HX_CONSOLE_PORT ?? process.env.HX_UI_PORT ?? "7878")
+  const host = process.env.HX_CONSOLE_HOST ?? process.env.HX_UI_HOST ?? "0.0.0.0"
   await startServer({ port, host })
 }

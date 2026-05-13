@@ -5,7 +5,6 @@ const STATUS_COLOR: Record<string, string> = {
   running: "#d29922",
   failed: "#f85149",
   system_error: "#f85149",
-  budget_exceeded: "#db6d28",
   timeout: "#db6d28",
   cancelled: "#8b949e",
 }
@@ -30,7 +29,6 @@ export function RunList({ onSelect }: { onSelect: (id: string) => void }) {
       <div style={s.header}>
         <span style={{ minWidth: 120 }}>STATUS</span>
         <span style={{ flex: 1 }}>RUN ID</span>
-        <span style={{ minWidth: 80, textAlign: "right" }}>COST</span>
         <span style={{ minWidth: 60, textAlign: "right" }}>DUR</span>
         <span style={{ minWidth: 200, marginLeft: 16 }}>CWD</span>
       </div>
@@ -38,9 +36,6 @@ export function RunList({ onSelect }: { onSelect: (id: string) => void }) {
         <div key={r.runId} style={s.row} onClick={() => onSelect(r.runId)}>
           <Badge status={r.status} />
           <span style={{ flex: 1, color: "#58a6ff", cursor: "pointer" }}>{r.runId}</span>
-          <span style={{ minWidth: 80, textAlign: "right", color: "#8b949e" }}>
-            {r.costUsd != null ? `$${r.costUsd.toFixed(4)}` : "—"}
-          </span>
           <span style={{ minWidth: 60, textAlign: "right", color: "#8b949e" }}>
             {r.durationSec != null ? `${r.durationSec.toFixed(0)}s` : "—"}
           </span>

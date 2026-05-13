@@ -41,7 +41,7 @@ hx console --stop       # 停止后台 server
 
 - 默认监听 `0.0.0.0:7878`，**局域网内可访问**
 - 所有 API 需要 token 鉴权（`?token=` 或 `Authorization: Bearer`）
-- Token 存于 `~/.hx/ui/token`，权限 `0600`，首次启动自动生成
+- Token 存于 `~/.hx/console/token`，权限 `0600`，首次启动自动生成
 - 勿在公网环境运行；如需限制本机访问：`--host 127.0.0.1`
 
 ## 安装

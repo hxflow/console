@@ -19,7 +19,9 @@ export function RunDetail({ runId, onBack }: { runId: string; onBack: () => void
     return () => clearInterval(id)
   }, [runId])
 
-  const result = data?.result
+  const envelope = data?.result
+  const result = envelope?.data
+  const status: string = result?.status ?? (envelope?.err === 0 ? "succeeded" : envelope ? "failed" : "running")
   const manifest = data?.manifest
 
   return (
@@ -28,12 +30,9 @@ export function RunDetail({ runId, onBack }: { runId: string; onBack: () => void
       <div style={s.topbar}>
         <button onClick={onBack} style={s.back}>← runs</button>
         <span style={{ marginLeft: 12, color: "#e6edf3" }}>{runId}</span>
-        {result && (
-          <span style={{ marginLeft: 12, color: STATUS_COLOR[result.status] ?? "#8b949e" }}>
-            {result.status}
-          </span>
-        )}
-        {!result && <span style={{ marginLeft: 12, color: "#d29922" }}>● running</span>}
+        <span style={{ marginLeft: 12, color: STATUS_COLOR[status] ?? "#8b949e" }}>
+          {!envelope ? "● running" : status}
+        </span>
       </div>
 
       {/* Tabs */}
@@ -47,7 +46,7 @@ export function RunDetail({ runId, onBack }: { runId: string; onBack: () => void
 
       {/* Content */}
       <div style={{ flex: 1, overflow: "auto", padding: 16 }}>
-        {tab === "overview" && <Overview result={result} manifest={manifest} />}
+        {tab === "overview" && <Overview envelope={envelope} manifest={manifest} />}
         {tab === "events" && <Events events={events} />}
         {tab === "diff" && <Diff diff={diff} />}
       </div>
@@ -55,32 +54,54 @@ export function RunDetail({ runId, onBack }: { runId: string; onBack: () => void
   )
 }
 
-function Overview({ result, manifest }: any) {
+function Overview({ envelope, manifest }: any) {
   if (!manifest) return <div>Loading…</div>
+  const data = envelope?.data
   return (
     <div style={{ display: "grid", gap: 8 }}>
       <Row label="backend" value={manifest.backend} />
       <Row label="image" value={manifest.spec?.image} />
       <Row label="cwd" value={manifest.invocation?.cwd} />
-      <Row label="profile" value={manifest.profile?.name} />
-      {result && <>
-        <Row label="cost" value={`$${result.usage?.costUsd?.toFixed(4)}`} />
-        <Row label="tokens" value={String(result.usage?.totalTokens ?? 0)} />
-        <Row label="duration" value={`${result.durationSec?.toFixed(1)}s`} />
-        {result.mrUrl && <Row label="MR" value={result.mrUrl} link />}
-        {result.errorSummary && <Row label="error" value={result.errorSummary} err />}
-        <div style={{ marginTop: 16 }}>
-          <div style={{ color: "#8b949e", marginBottom: 8, fontSize: 11 }}>PHASES</div>
-          {result.phases?.length
-            ? result.phases.map((p: any, i: number) => (
-                <div key={i} style={{ display: "flex", gap: 16, padding: "4px 0", borderBottom: "1px solid #21262d" }}>
-                  <span style={{ minWidth: 80, color: "#58a6ff" }}>{p.phase}</span>
-                  <span style={{ color: p.outcome === "ok" ? "#3fb950" : "#f85149" }}>{p.outcome}</span>
-                  <span style={{ color: "#8b949e" }}>{p.durationMs}ms</span>
-                </div>
-              ))
-            : <div style={{ color: "#8b949e" }}>No phase data</div>}
-        </div>
+      <Row label="environment" value={manifest.environment?.name} />
+      {data && <>
+        {data.model && <Row label="model" value={data.model} />}
+        {data.provider && <Row label="provider" value={data.provider} />}
+        {data.scope && <Row label="scope" value={data.scope} />}
+        {data.source && <Row label="source" value={data.source} />}
+        {data.executionLocation && <Row label="location" value={data.executionLocation} />}
+        {typeof data.durationSec === "number" && <Row label="duration" value={`${data.durationSec.toFixed(1)}s`} />}
+        {data.usage?.totalTokens > 0 && (
+          <Row
+            label="tokens"
+            value={`${data.usage.totalTokens} (in:${data.usage.inputTokens} out:${data.usage.outputTokens} cache_r:${data.usage.cacheReadTokens} cache_w:${data.usage.cacheWriteTokens})`}
+          />
+        )}
+        {envelope?.msg && envelope.err !== 0 && <Row label="error" value={envelope.msg} err />}
+        {data.summary && (
+          <div style={{ marginTop: 16, padding: 12, background: "#161b22", borderRadius: 4, color: "#e6edf3", whiteSpace: "pre-wrap" }}>
+            {data.summary}
+          </div>
+        )}
+        {Array.isArray(data.artifacts) && data.artifacts.length > 0 && (
+          <div style={{ marginTop: 16 }}>
+            <div style={{ color: "#8b949e", marginBottom: 8, fontSize: 11 }}>ARTIFACTS</div>
+            {data.artifacts.map((a: any, i: number) => (
+              <div key={i} style={{ padding: "4px 0" }}>
+                <span style={{ color: "#bc8cff", marginRight: 8, minWidth: 60, display: "inline-block" }}>{a.type}</span>
+                <a href={a.url} target="_blank" rel="noreferrer">{a.label ?? a.url}</a>
+              </div>
+            ))}
+          </div>
+        )}
+        {data.skills && (
+          <div style={{ marginTop: 16, fontSize: 11, color: "#8b949e" }}>
+            <div>system skills: {data.skills.system?.join(", ") || "—"}</div>
+            <div>project skills: {data.skills.project?.join(", ") || "—"}</div>
+            {data.skills.overridden?.length > 0 && (
+              <div style={{ color: "#d29922" }}>overridden: {data.skills.overridden.join(", ")}</div>
+            )}
+          </div>
+        )}
       </>}
     </div>
   )
@@ -214,7 +235,7 @@ function Diff({ diff }: { diff: string }) {
 
 const STATUS_COLOR: Record<string, string> = {
   succeeded: "#3fb950", running: "#d29922", failed: "#f85149",
-  system_error: "#f85149", budget_exceeded: "#db6d28", timeout: "#db6d28", cancelled: "#8b949e",
+  system_error: "#f85149", timeout: "#db6d28", cancelled: "#8b949e",
 }
 
 const s = {
